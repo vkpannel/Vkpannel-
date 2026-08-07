@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VKPannel Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<header class="header">
+    <h2>VKPannel Dashboard</h2>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Welcome 👋</h3>
+        <p id="userEmail">Loading...</p>
+    </div>
+
+    <div class="card">
+        <h3>Balance</h3>
+        <h2>₹0.00</h2>
+    </div>
+
+    <div class="card">
+        <h3>New Order</h3>
+
+        <select id="service">
+            <option>Select Service</option>
+        </select>
+
+        <input type="text" id="link" placeholder="Enter Link">
+
+        <input type="number" id="quantity" placeholder="Quantity">
+
+        <button id="orderBtn">Place Order</button>
+    </div>
+
+    <div class="card">
+        <h3>Order History</h3>
+        <p>No orders yet.</p>
+    </div>
+
+    <button id="logoutBtn">Logout</button>
+
+</div>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>
