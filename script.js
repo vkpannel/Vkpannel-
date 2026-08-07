@@ -48,3 +48,20 @@ if (loginBtn) {
     }
   });
 }
+// DASHBOARD
+const { data: { user } } = await supabase.auth.getUser();
+
+const userEmail = document.getElementById("userEmail");
+
+if (user && userEmail) {
+    userEmail.innerText = user.email;
+}
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+    });
+}
