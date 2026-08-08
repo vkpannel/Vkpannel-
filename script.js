@@ -188,7 +188,17 @@ if (serviceSelect) {
 
 if (serviceSelect) {
 
-    const serviceDetails = document.getElementById("serviceDetails");
+    const serviceDetails = document.createElement("div");
+
+    serviceDetails.id = "serviceDetails";
+    serviceDetails.style.marginTop = "15px";
+    serviceDetails.style.padding = "12px";
+    serviceDetails.style.borderRadius = "10px";
+    serviceDetails.style.background = "#182235";
+    serviceDetails.style.color = "white";
+    serviceDetails.style.lineHeight = "1.6";
+
+    serviceSelect.insertAdjacentElement("afterend", serviceDetails);
 
     serviceSelect.addEventListener("change", () => {
 
@@ -196,7 +206,7 @@ if (serviceSelect) {
             serviceSelect.options[serviceSelect.selectedIndex];
 
         if (!selectedOption || !selectedOption.value) {
-            if (serviceDetails) serviceDetails.innerHTML = "";
+            serviceDetails.innerHTML = "";
             return;
         }
 
@@ -206,33 +216,27 @@ if (serviceSelect) {
         const category = selectedOption.dataset.category;
         const refill = selectedOption.dataset.refill;
 
-        // Customer selling rate
-        let customerRate;
+        // Customer pricing rule
+        const customerRate =
+            providerRate < 1 ? 1 : providerRate * 2;
 
-        if (providerRate < 1) {
-            customerRate = 1;
-        } else {
-            customerRate = providerRate * 2;
-        }
-
-        if (serviceDetails) {
-            serviceDetails.innerHTML = `
-                <strong>Service Details</strong><br>
-                💰 Provider Rate: ₹${providerRate}<br>
-                💵 Customer Rate: ₹${customerRate.toFixed(2)}<br>
-                📦 Minimum: ${min}<br>
-                📦 Maximum: ${max}<br>
-                📂 Category: ${category}<br>
-                ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
-            `;
-        }
+        serviceDetails.innerHTML = `
+            <strong>Service Details</strong><br>
+            💰 Provider Rate: ₹${providerRate}<br>
+            💵 Customer Rate: ₹${customerRate.toFixed(2)}<br>
+            📦 Minimum: ${min}<br>
+            📦 Maximum: ${max}<br>
+            📂 Category: ${category}<br>
+            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
+        `;
 
         const quantityInput = document.getElementById("quantity");
 
         if (quantityInput) {
             quantityInput.min = min;
             quantityInput.max = max;
-            quantityInput.placeholder = `Quantity (${min} - ${max})`;
+            quantityInput.placeholder =
+                `Quantity (${min} - ${max})`;
         }
     });
 }
