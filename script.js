@@ -183,23 +183,12 @@ if (serviceSelect) {
     loadServices();
 }
 // =========================
-// SERVICE DETAILS
+// SERVICE DETAILS + PRICING
 // =========================
 
 if (serviceSelect) {
 
-    const serviceDetails = document.createElement("div");
-
-    serviceDetails.id = "serviceDetails";
-    serviceDetails.style.marginTop = "15px";
-    serviceDetails.style.padding = "12px";
-    serviceDetails.style.borderRadius = "10px";
-    serviceDetails.style.background = "#182235";
-    serviceDetails.style.color = "white";
-    serviceDetails.style.lineHeight = "1.6";
-
-    serviceSelect.insertAdjacentElement("afterend", serviceDetails);
-
+    const serviceDetails = document.getElementById("serviceDetails");
 
     serviceSelect.addEventListener("change", () => {
 
@@ -207,26 +196,37 @@ if (serviceSelect) {
             serviceSelect.options[serviceSelect.selectedIndex];
 
         if (!selectedOption || !selectedOption.value) {
-            serviceDetails.innerHTML = "";
+            if (serviceDetails) serviceDetails.innerHTML = "";
             return;
         }
 
-        const rate = selectedOption.dataset.rate;
+        const providerRate = parseFloat(selectedOption.dataset.rate);
         const min = selectedOption.dataset.min;
         const max = selectedOption.dataset.max;
         const category = selectedOption.dataset.category;
         const refill = selectedOption.dataset.refill;
 
-        serviceDetails.innerHTML = `
-            <strong>Service Details</strong><br>
-            💰 Rate: ₹${rate}<br>
-            📦 Minimum: ${min}<br>
-            📦 Maximum: ${max}<br>
-            📂 Category: ${category}<br>
-            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
-        `;
+        // Customer selling rate
+        let customerRate;
 
-        // Quantity limits
+        if (providerRate < 1) {
+            customerRate = 1;
+        } else {
+            customerRate = providerRate * 2;
+        }
+
+        if (serviceDetails) {
+            serviceDetails.innerHTML = `
+                <strong>Service Details</strong><br>
+                💰 Provider Rate: ₹${providerRate}<br>
+                💵 Customer Rate: ₹${customerRate.toFixed(2)}<br>
+                📦 Minimum: ${min}<br>
+                📦 Maximum: ${max}<br>
+                📂 Category: ${category}<br>
+                ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
+            `;
+        }
+
         const quantityInput = document.getElementById("quantity");
 
         if (quantityInput) {
