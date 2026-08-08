@@ -15,8 +15,13 @@ const registerBtn = document.getElementById("registerBtn");
 if (registerBtn) {
     registerBtn.addEventListener("click", async () => {
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const email = document.getElementById("email")?.value.trim();
+        const password = document.getElementById("password")?.value;
+
+        if (!email || !password) {
+            alert("Email aur password enter karo.");
+            return;
+        }
 
         const { error } = await supabase.auth.signUp({
             email,
@@ -42,8 +47,13 @@ const loginBtn = document.getElementById("loginBtn");
 if (loginBtn) {
     loginBtn.addEventListener("click", async () => {
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const email = document.getElementById("email")?.value.trim();
+        const password = document.getElementById("password")?.value;
+
+        if (!email || !password) {
+            alert("Email aur password enter karo.");
+            return;
+        }
 
         const { error } = await supabase.auth.signInWithPassword({
             email,
@@ -64,14 +74,19 @@ if (loginBtn) {
 // DASHBOARD USER
 // =========================
 
-const {
-    data: { user }
-} = await supabase.auth.getUser();
-
 const userEmail = document.getElementById("userEmail");
 
-if (user && userEmail) {
-    userEmail.innerText = user.email;
+if (userEmail) {
+
+    const {
+        data: { user }
+    } = await supabase.auth.getUser();
+
+    if (user) {
+        userEmail.innerText = user.email;
+    } else {
+        userEmail.innerText = "Not logged in";
+    }
 }
 
 
@@ -82,6 +97,7 @@ if (user && userEmail) {
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
+
     logoutBtn.addEventListener("click", async () => {
 
         await supabase.auth.signOut();
@@ -99,43 +115,70 @@ const serviceSelect = document.getElementById("service");
 
 if (serviceSelect) {
 
+    // Compact service box
+    serviceSelect.style.height = "45px";
+    serviceSelect.style.minHeight = "45px";
+    serviceSelect.style.width = "100%";
+    serviceSelect.style.boxSizing = "border-box";
+
+
     async function loadServices() {
 
         try {
 
             serviceSelect.innerHTML = "";
 
-            const loadingOption = document.createElement("option");
-            loadingOption.textContent = "Loading services...";
+            const loadingOption =
+                document.createElement("option");
+
+            loadingOption.textContent =
+                "Loading services...";
+
             loadingOption.disabled = true;
             loadingOption.selected = true;
 
             serviceSelect.appendChild(loadingOption);
 
 
-            const response = await fetch("/api/smm");
+            const response =
+                await fetch("/api/smm");
+
 
             if (!response.ok) {
-                throw new Error("API request failed: " + response.status);
+                throw new Error(
+                    "API request failed: " +
+                    response.status
+                );
             }
 
-            const services = await response.json();
+
+            const services =
+                await response.json();
+
 
             if (!Array.isArray(services)) {
-                throw new Error("Invalid services response");
+                throw new Error(
+                    "Invalid services response"
+                );
             }
 
 
             serviceSelect.innerHTML = "";
 
 
-            const defaultOption = document.createElement("option");
+            const defaultOption =
+                document.createElement("option");
+
             defaultOption.value = "";
-            defaultOption.textContent = "Select Service";
+            defaultOption.textContent =
+                "Select Service";
+
             defaultOption.disabled = true;
             defaultOption.selected = true;
 
-            serviceSelect.appendChild(defaultOption);
+            serviceSelect.appendChild(
+                defaultOption
+            );
 
 
             // =========================
@@ -144,51 +187,90 @@ if (serviceSelect) {
 
             services.forEach(service => {
 
-                const option = document.createElement("option");
+                const option =
+                    document.createElement("option");
 
-                option.value = service.service;
 
-                // Provider rate is kept internally
-                const providerRate = parseFloat(service.rate);
+                option.value =
+                    service.service;
 
-                // Customer pricing rule
+
+                const providerRate =
+                    parseFloat(service.rate);
+
+
+                // Pricing rule
                 const customerRate =
                     providerRate < 1
                         ? 1
                         : providerRate * 2;
 
-                // Customer sees ONLY selling price
+
+                // Customer sees only selling price
                 option.textContent =
                     `${service.service} - ${service.name} - ₹${customerRate.toFixed(2)}`;
 
 
-                // Internal service information
-                option.dataset.rate = providerRate;
-                option.dataset.customerRate = customerRate;
-                option.dataset.min = service.min;
-                option.dataset.max = service.max;
-                option.dataset.category = service.category;
-                option.dataset.refill = service.refill;
+                // Internal data
+                option.dataset.rate =
+                    providerRate;
 
-                serviceSelect.appendChild(option);
+                option.dataset.customerRate =
+                    customerRate;
+
+                option.dataset.min =
+                    service.min;
+
+                option.dataset.max =
+                    service.max;
+
+                option.dataset.category =
+                    service.category;
+
+                option.dataset.refill =
+                    service.refill;
+
+
+                serviceSelect.appendChild(
+                    option
+                );
             });
 
 
-            console.log("Services loaded:", services.length);
+            console.log(
+                "Services loaded:",
+                services.length
+            );
+
 
         } catch (error) {
 
-            console.error("Service loading error:", error);
+            console.error(
+                "Service loading error:",
+                error
+            );
+
 
             serviceSelect.innerHTML = "";
 
-            const errorOption = document.createElement("option");
-            errorOption.textContent = "Failed to load services";
+
+            const errorOption =
+                document.createElement("option");
+
+            errorOption.textContent =
+                "Failed to load services";
+
             errorOption.disabled = true;
 
-            serviceSelect.appendChild(errorOption);
 
-            alert("Services load nahi ho paayi. Please try again.");
+            serviceSelect.appendChild(
+                errorOption
+            );
+
+
+            alert(
+                "Services load nahi ho paayi. Please try again."
+            );
         }
     }
 
@@ -198,74 +280,121 @@ if (serviceSelect) {
 
 
 // =========================
-// SERVICE DETAILS + PRICING
+// SERVICE DETAILS + TOTAL PRICE
 // =========================
 
 if (serviceSelect) {
 
-    const serviceDetails = document.createElement("div");
+    const serviceDetails =
+        document.createElement("div");
 
-    serviceDetails.id = "serviceDetails";
-    serviceDetails.style.marginTop = "15px";
-    serviceDetails.style.padding = "12px";
-    serviceDetails.style.borderRadius = "10px";
-    serviceDetails.style.background = "#182235";
-    serviceDetails.style.color = "white";
-    serviceDetails.style.lineHeight = "1.6";
 
-    serviceSelect.insertAdjacentElement("afterend", serviceDetails);
+    serviceDetails.id =
+        "serviceDetails";
 
-    const quantityInput = document.getElementById("quantity");
 
-    serviceSelect.addEventListener("change", updateServiceDetails);
+    serviceDetails.style.marginTop =
+        "15px";
 
-    if (quantityInput) {
-        quantityInput.addEventListener("input", updateServiceDetails);
-    }
+    serviceDetails.style.padding =
+        "12px";
+
+    serviceDetails.style.borderRadius =
+        "10px";
+
+    serviceDetails.style.background =
+        "#182235";
+
+    serviceDetails.style.color =
+        "white";
+
+    serviceDetails.style.lineHeight =
+        "1.6";
+
+
+    serviceSelect.insertAdjacentElement(
+        "afterend",
+        serviceDetails
+    );
+
+
+    const quantityInput =
+        document.getElementById("quantity");
+
 
     function updateServiceDetails() {
 
         const selectedOption =
-            serviceSelect.options[serviceSelect.selectedIndex];
+            serviceSelect.options[
+                serviceSelect.selectedIndex
+            ];
 
-        if (!selectedOption || !selectedOption.value) {
-            serviceDetails.innerHTML = "";
+
+        if (
+            !selectedOption ||
+            !selectedOption.value
+        ) {
+
+            serviceDetails.innerHTML =
+                "";
+
             return;
         }
 
-        const providerRate =
-            parseFloat(selectedOption.dataset.rate);
+
+        const customerRate =
+            parseFloat(
+                selectedOption.dataset.customerRate
+            );
+
 
         const min =
-            parseInt(selectedOption.dataset.min);
+            parseInt(
+                selectedOption.dataset.min
+            );
+
 
         const max =
-            parseInt(selectedOption.dataset.max);
+            parseInt(
+                selectedOption.dataset.max
+            );
+
 
         const category =
             selectedOption.dataset.category;
 
+
         const refill =
             selectedOption.dataset.refill;
 
-        // Customer pricing rule
-        const customerRate =
-            providerRate < 1 ? 1 : providerRate * 2;
 
         let quantity = 0;
 
-        if (quantityInput) {
-            quantity = parseInt(quantityInput.value) || 0;
 
-            quantityInput.min = min;
-            quantityInput.max = max;
+        if (quantityInput) {
+
+            quantity =
+                parseInt(
+                    quantityInput.value
+                ) || 0;
+
+
+            quantityInput.min =
+                min;
+
+            quantityInput.max =
+                max;
+
             quantityInput.placeholder =
                 `Quantity (${min} - ${max})`;
         }
 
-        // Price is per 1000 quantity
+
+        // Customer price is per 1000
         const totalPrice =
-            (customerRate * quantity) / 1000;
+            (customerRate * quantity) /
+            1000;
+
 
         serviceDetails.innerHTML = `
             <strong>Service Details</strong><br>
@@ -273,9 +402,27 @@ if (serviceSelect) {
             📦 Minimum: ${min}<br>
             📦 Maximum: ${max}<br>
             📂 Category: ${category}<br>
-            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}<br>
+            ♻️ Refill: ${
+                refill === "1"
+                    ? "Available"
+                    : "Not Available"
+            }<br>
             💰 Total Price: ₹${totalPrice.toFixed(2)}
         `;
     }
-}
-        }
+
+
+    serviceSelect.addEventListener(
+        "change",
+        updateServiceDetails
+    );
+
+
+    if (quantityInput) {
+
+        quantityInput.addEventListener(
+            "input",
+            updateServiceDetails
+        );
+    }
+                             }
