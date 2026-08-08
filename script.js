@@ -182,3 +182,57 @@ if (serviceSelect) {
 
     loadServices();
 }
+// =========================
+// SERVICE DETAILS
+// =========================
+
+if (serviceSelect) {
+
+    const serviceDetails = document.createElement("div");
+
+    serviceDetails.id = "serviceDetails";
+    serviceDetails.style.marginTop = "15px";
+    serviceDetails.style.padding = "12px";
+    serviceDetails.style.borderRadius = "10px";
+    serviceDetails.style.background = "#182235";
+    serviceDetails.style.color = "white";
+    serviceDetails.style.lineHeight = "1.6";
+
+    serviceSelect.insertAdjacentElement("afterend", serviceDetails);
+
+
+    serviceSelect.addEventListener("change", () => {
+
+        const selectedOption =
+            serviceSelect.options[serviceSelect.selectedIndex];
+
+        if (!selectedOption || !selectedOption.value) {
+            serviceDetails.innerHTML = "";
+            return;
+        }
+
+        const rate = selectedOption.dataset.rate;
+        const min = selectedOption.dataset.min;
+        const max = selectedOption.dataset.max;
+        const category = selectedOption.dataset.category;
+        const refill = selectedOption.dataset.refill;
+
+        serviceDetails.innerHTML = `
+            <strong>Service Details</strong><br>
+            💰 Rate: ₹${rate}<br>
+            📦 Minimum: ${min}<br>
+            📦 Maximum: ${max}<br>
+            📂 Category: ${category}<br>
+            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
+        `;
+
+        // Quantity limits
+        const quantityInput = document.getElementById("quantity");
+
+        if (quantityInput) {
+            quantityInput.min = min;
+            quantityInput.max = max;
+            quantityInput.placeholder = `Quantity (${min} - ${max})`;
+        }
+    });
+}
