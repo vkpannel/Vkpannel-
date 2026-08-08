@@ -198,7 +198,7 @@ if (serviceSelect) {
 
 
 // =========================
-// SERVICE DETAILS + CUSTOMER PRICE
+// SERVICE DETAILS + PRICING
 // =========================
 
 if (serviceSelect) {
@@ -206,7 +206,6 @@ if (serviceSelect) {
     const serviceDetails = document.createElement("div");
 
     serviceDetails.id = "serviceDetails";
-
     serviceDetails.style.marginTop = "15px";
     serviceDetails.style.padding = "12px";
     serviceDetails.style.borderRadius = "10px";
@@ -214,36 +213,34 @@ if (serviceSelect) {
     serviceDetails.style.color = "white";
     serviceDetails.style.lineHeight = "1.6";
 
-    serviceSelect.insertAdjacentElement(
-        "afterend",
-        serviceDetails
-    );
+    serviceSelect.insertAdjacentElement("afterend", serviceDetails);
 
+    const quantityInput = document.getElementById("quantity");
 
-    serviceSelect.addEventListener("change", () => {
+    serviceSelect.addEventListener("change", updateServiceDetails);
+
+    if (quantityInput) {
+        quantityInput.addEventListener("input", updateServiceDetails);
+    }
+
+    function updateServiceDetails() {
 
         const selectedOption =
-            serviceSelect.options[
-                serviceSelect.selectedIndex
-            ];
+            serviceSelect.options[serviceSelect.selectedIndex];
 
         if (!selectedOption || !selectedOption.value) {
-
             serviceDetails.innerHTML = "";
-
             return;
         }
 
-
-        // Provider rate stays hidden
-        const customerRate =
-            parseFloat(selectedOption.dataset.customerRate);
+        const providerRate =
+            parseFloat(selectedOption.dataset.rate);
 
         const min =
-            selectedOption.dataset.min;
+            parseInt(selectedOption.dataset.min);
 
         const max =
-            selectedOption.dataset.max;
+            parseInt(selectedOption.dataset.max);
 
         const category =
             selectedOption.dataset.category;
@@ -251,28 +248,34 @@ if (serviceSelect) {
         const refill =
             selectedOption.dataset.refill;
 
+        // Customer pricing rule
+        const customerRate =
+            providerRate < 1 ? 1 : providerRate * 2;
 
-        // Customer-facing details ONLY
-        serviceDetails.innerHTML = `
-            <strong>Service Details</strong><br>
-            💰 Price: ₹${customerRate.toFixed(2)}<br>
-            📦 Minimum: ${min}<br>
-            📦 Maximum: ${max}<br>
-            📂 Category: ${category}<br>
-            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}
-        `;
-
-
-        const quantityInput =
-            document.getElementById("quantity");
+        let quantity = 0;
 
         if (quantityInput) {
+            quantity = parseInt(quantityInput.value) || 0;
 
             quantityInput.min = min;
             quantityInput.max = max;
-
             quantityInput.placeholder =
                 `Quantity (${min} - ${max})`;
         }
-    });
+
+        // Price is per 1000 quantity
+        const totalPrice =
+            (customerRate * quantity) / 1000;
+
+        serviceDetails.innerHTML = `
+            <strong>Service Details</strong><br>
+            💵 Price: ₹${customerRate.toFixed(2)} / 1000<br>
+            📦 Minimum: ${min}<br>
+            📦 Maximum: ${max}<br>
+            📂 Category: ${category}<br>
+            ♻️ Refill: ${refill === "1" ? "Available" : "Not Available"}<br>
+            💰 Total Price: ₹${totalPrice.toFixed(2)}
+        `;
+    }
+}
         }
