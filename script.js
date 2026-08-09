@@ -71,21 +71,54 @@ if (loginBtn) {
 
 
 // =========================
-// DASHBOARD USER
+// DASHBOARD USER + BALANCE
 // =========================
 
 const userEmail = document.getElementById("userEmail");
+const userBalance = document.getElementById("userBalance");
 
-if (userEmail) {
+if (userEmail || userBalance) {
 
     const {
         data: { user }
     } = await supabase.auth.getUser();
 
     if (user) {
-        userEmail.innerText = user.email;
+
+        if (userEmail) {
+            userEmail.innerText = user.email;
+        }
+
+        const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("balance")
+            .eq("id", user.id)
+            .single();
+
+        if (error) {
+            console.error("Balance fetch error:", error);
+
+            if (userBalance) {
+                userBalance.innerText = "₹0.00";
+            }
+
+        } else {
+
+            if (userBalance) {
+                userBalance.innerText =
+                    `₹${Number(profile.balance || 0).toFixed(2)}`;
+            }
+        }
+
     } else {
-        userEmail.innerText = "Not logged in";
+
+        if (userEmail) {
+            userEmail.innerText = "Not logged in";
+        }
+
+        if (userBalance) {
+            userBalance.innerText = "₹0.00";
+        }
     }
 }
 
