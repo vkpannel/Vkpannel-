@@ -459,3 +459,122 @@ if (serviceSelect) {
         );
     }
                              }
+// =========================
+// PLACE ORDER
+// =========================
+
+const orderBtn = document.getElementById("orderBtn");
+
+if (orderBtn) {
+    orderBtn.addEventListener("click", async () => {
+
+        const serviceSelect = document.getElementById("service");
+        const linkInput = document.getElementById("link");
+        const quantityInput = document.getElementById("quantity");
+        const userBalance = document.getElementById("userBalance");
+
+        const selectedOption =
+            serviceSelect?.options[serviceSelect.selectedIndex];
+
+        if (!selectedOption || !selectedOption.value) {
+            alert("Please select a service.");
+            return;
+        }
+
+        const link = linkInput?.value.trim();
+        const quantity = parseInt(quantityInput?.value);
+
+        if (!link) {
+            alert("Please enter the link.");
+            return;
+        }
+
+        if (!quantity || quantity <= 0) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+
+        const min = parseInt(selectedOption.dataset.min);
+        const max = parseInt(selectedOption.dataset.max);
+
+        if (quantity < min || quantity > max) {
+            alert(`Quantity ${min} se ${max} ke beech honi chahiye.`);
+            return;
+        }
+
+        const customerRate =
+            parseFloat(selectedOption.dataset.customerRate);
+
+        const charge =
+            (customerRate * quantity) / 1000;
+
+        const {
+            data: { user }
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            alert("Please login first.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!confirm(
+            `Order charge: ₹${charge.toFixed(2)}\n\nOrder place karein?`
+        )) {
+            return;
+        }
+
+        orderBtn.disabled = true;
+        orderBtn.innerText = "Placing Order...";
+
+        try {
+
+            const response = await fetch("/api/order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    service: selectedOption.value,
+                    link: link,
+                    quantity: quantity,
+                    userId: user.id,
+                    charge: charge
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Order failed"
+                );
+            }
+
+            alert(
+                `Order placed successfully!\nOrder ID: ${
+                    data.order?.provider_order_id || "N/A"
+                }`
+            );
+
+            if (userBalance && data.newBalance !== undefined) {
+                userBalance.innerText =
+                    `₹${Number(data.newBalance).toFixed(2)}`;
+            }
+
+            linkInput.value = "";
+            quantityInput.value = "";
+
+        } catch (error) {
+
+            console.error("Order error:", error);
+
+            alert(error.message);
+
+        } finally {
+
+            orderBtn.disabled = false;
+            orderBtn.innerText = "Place Order";
+        }
+    });
+}
