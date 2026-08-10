@@ -40,6 +40,7 @@ export default async function handler(req, res) {
     const text = await response.text();
 
     let data;
+
     try {
       data = JSON.parse(text);
     } catch {
@@ -49,9 +50,37 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json(data);
+    // Provider error
+    if (data.error) {
+      return res.status(400).json({
+        error: data.error
+      });
+    }
+
+    // Provider order ID
+    const providerOrderId =
+      data.order ||
+      data.order_id ||
+      data.id ||
+      null;
+
+    if (!providerOrderId) {
+      return res.status(502).json({
+        error: "Order created but provider did not return an order ID",
+        providerResponse: data
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      order: {
+        provider_order_id: String(providerOrderId)
+      }
+    });
 
   } catch (error) {
+    console.error("Order API error:", error);
+
     return res.status(500).json({
       error: "Failed to place order"
     });
