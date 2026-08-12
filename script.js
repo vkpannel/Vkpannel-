@@ -578,3 +578,82 @@ if (orderBtn) {
         }
     });
 }
+// =========================
+// ADD FUNDS REQUEST
+// =========================
+
+const submitDeposit = document.getElementById("submitDeposit");
+
+if (submitDeposit) {
+
+    submitDeposit.addEventListener("click", async () => {
+
+        const amountInput = document.getElementById("amount");
+        const utrInput = document.getElementById("utr");
+        const message = document.getElementById("depositMessage");
+
+        const amount = Number(amountInput?.value);
+        const utr = utrInput?.value.trim();
+
+        if (!amount || amount <= 0) {
+            alert("Valid amount enter karo.");
+            return;
+        }
+
+        if (!utr) {
+            alert("UTR / Transaction ID enter karo.");
+            return;
+        }
+
+        const {
+            data: { user }
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            alert("Please login first.");
+            window.location.href = "login.html";
+            return;
+        }
+
+        submitDeposit.disabled = true;
+        submitDeposit.innerText = "Submitting...";
+
+        try {
+
+            const { error } = await supabase
+                .from("deposit_requests")
+                .insert({
+                    user_id: user.id,
+                    amount: amount,
+                    utr: utr
+                });
+
+            if (error) {
+                throw error;
+            }
+
+            if (message) {
+                message.innerText =
+                    "Payment request submitted. Verification ke baad balance add hoga.";
+            }
+
+            amountInput.value = "";
+            utrInput.value = "";
+
+        } catch (error) {
+
+            console.error("Deposit error:", error);
+
+            alert(
+                "Request submit nahi hui: " +
+                error.message
+            );
+
+        } finally {
+
+            submitDeposit.disabled = false;
+            submitDeposit.innerText =
+                "Submit Payment Request";
+        }
+    });
+}
