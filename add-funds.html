@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Funds - VKPannel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <h2>VKPannel - Add Funds</h2>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Add Funds</h3>
+
+        <p>Amount enter karo:</p>
+
+        <input
+            type="number"
+            id="amount"
+            placeholder="Enter amount"
+            min="1"
+        >
+
+        <h3>Payment</h3>
+
+        <p>Payment karne ke baad neeche UTR / Transaction ID submit karo.</p>
+
+        <input
+            type="text"
+            id="utr"
+            placeholder="Enter UTR / Transaction ID"
+        >
+
+        <button id="submitDeposit">
+            Submit Payment Request
+        </button>
+
+        <p id="depositMessage"></p>
+
+    </div>
+
+    <div class="card">
+        <h3>Important</h3>
+        <p>
+            Payment karne ke baad hi UTR submit karein.
+            Request verify hone ke baad balance add kiya jayega.
+        </p>
+    </div>
+
+    <button onclick="window.location.href='dashboard.html'">
+        Back to Dashboard
+    </button>
+
+</div>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>
