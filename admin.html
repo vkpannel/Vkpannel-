@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VKPannel Admin</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .request {
+            background: #1e293b;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .approve {
+            background: #22c55e;
+            color: white;
+        }
+
+        .reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        #message {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>VKPannel Admin</h1>
+
+    <div id="message"></div>
+
+    <div id="requests">
+        Loading requests...
+    </div>
+
+    <script type="module">
+
+        const SUPABASE_URL =
+            "https://condkcjbmvghrexgcinn.supabase.co";
+
+        const SUPABASE_KEY =
+            "sb_publishable_g0UPWbNisSLTMdSBR8-6iw_EDQsilZ-";
+
+        const { createClient } =
+            await import(
+                "https://esm.sh/@supabase/supabase-js@2"
+            );
+
+        const supabase =
+            createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+
+        async function loadRequests() {
+
+            const container =
+                document.getElementById("requests");
+
+            container.innerHTML =
+                "Loading requests...";
+
+            const {
+                data: { user }
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                container.innerHTML =
+                    "Please login first.";
+                return;
+            }
+
+            const { data, error } =
+                await supabase
+                    .from("deposit_requests")
+                    .select("*")
+                    .eq("status", "pending")
+                    .order("created_at", {
+                        ascending: false
+                    });
+
+            if (error) {
+
+                console.error(error);
+
+                container.innerHTML =
+                    "Failed to load requests.";
+
+                return;
+            }
+
+            if (!data || data.length === 0) {
+
+                container.innerHTML =
+                    "No pending deposit requests.";
+
+                return;
+            }
+
+            container.innerHTML = "";
+
+            data.forEach(request => {
+
+                const div =
+                    document.createElement("div");
+
+                div.className = "request";
+
+                div.innerHTML = `
+                    <strong>Amount:</strong>
+                    ₹${Number(request.amount).toFixed(2)}
+                    <br>
+
+                    <strong>UTR:</strong>
+                    ${request.utr}
+                    <br>
+
+                    <strong>User ID:</strong>
+                    ${request.user_id}
+                    <br>
+
+                    <strong>Status:</strong>
+                    ${request.status}
+                    <br><br>
+
+                    <button class="approve">
+                        Approve
+                    </button>
+
+                    <button class="reject">
+                        Reject
+                    </button>
+                `;
+
+                const approveBtn =
+                    div.querySelector(".approve");
+
+                const rejectBtn =
+                    div.querySelector(".reject");
+
+                approveBtn.onclick =
+                    () => approveRequest(request.id);
+
+                rejectBtn.onclick =
+                    () => rejectRequest(request.id);
+
+                container.appendChild(div);
+            });
+        }
+
+
+        async function approveRequest(id) {
+
+            alert(
+                "Approval API abhi next step me banayenge."
+            );
+        }
+
+
+        async function rejectRequest(id) {
+
+            alert(
+                "Reject API abhi next step me banayenge."
+            );
+        }
+
+
+        loadRequests();
+
+    </script>
+
+</body>
+</html>
