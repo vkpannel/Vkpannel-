@@ -579,13 +579,13 @@ if (orderBtn) {
     });
 }
 // =========================
+// =========================
 // ADD FUNDS REQUEST
 // =========================
 
 const submitDeposit = document.getElementById("submitDeposit");
 
 if (submitDeposit) {
-
     submitDeposit.addEventListener("click", async () => {
 
         const amountInput = document.getElementById("amount");
@@ -635,9 +635,7 @@ if (submitDeposit) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(
-                    data.error || "Failed to submit deposit request"
-                );
+                throw new Error(data.error || "Request failed");
             }
 
             if (message) {
