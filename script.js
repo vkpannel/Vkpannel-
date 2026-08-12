@@ -620,16 +620,24 @@ if (submitDeposit) {
 
         try {
 
-            const { error } = await supabase
-                .from("deposit_requests")
-                .insert({
-                    user_id: user.id,
+            const response = await fetch("/api/deposit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId: user.id,
                     amount: amount,
                     utr: utr
-                });
+                })
+            });
 
-            if (error) {
-                throw error;
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Failed to submit deposit request"
+                );
             }
 
             if (message) {
