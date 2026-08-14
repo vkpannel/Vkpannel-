@@ -91,10 +91,39 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Admin verified. Approval is ready for next step."
-    });
+const response = await fetch(
+  `${process.env.SUPABASE_URL}/rest/v1/rpc/approve_deposit`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": process.env.SUPABASE_SERVICE_ROLE_KEY,
+      "Authorization": `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+    },
+    body: JSON.stringify({
+      p_request_id: requestId
+    })
+  }
+);
+
+const result = await response.json();
+
+if (!response.ok) {
+  return res.status(500).json({
+    error: result?.message || "Failed to approve deposit"
+  });
+}
+
+if (result?.success === false) {
+  return res.status(409).json({
+    error: result.message
+  });
+}
+
+return res.status(200).json({
+  success: true,
+  message: result.message || "Deposit approved successfully"
+});
 
   } catch (error) {
     console.error("Admin deposit error:", error);
