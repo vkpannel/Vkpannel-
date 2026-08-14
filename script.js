@@ -69,7 +69,35 @@ if (loginBtn) {
     });
 }
 
+// =========================
+// FORGOT PASSWORD
+// =========================
 
+const forgotPassword = document.getElementById("forgotPassword");
+
+if (forgotPassword) {
+    forgotPassword.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email")?.value.trim();
+
+        if (!email) {
+            alert("Pehle apna email enter karo.");
+            return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: "https://vkpannel.vercel.app/reset-password.html"
+        });
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        alert("Password reset link tumhare email par bhej diya gaya hai.");
+    });
+}
 // =========================
 // DASHBOARD USER + BALANCE
 // =========================
