@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VKPannel Dashboard</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VKPannel Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <header class="header">
@@ -25,17 +26,36 @@
     </div>
 
     <div class="card">
+        <h3>Add Funds</h3>
+        <p>UPI se payment karke balance add karein.</p>
+
+        <button onclick="window.location.href='add-funds.html'">
+            Add Funds
+        </button>
+    </div>
+
+    <div class="card">
         <h3>New Order</h3>
 
         <select id="service">
             <option>Select Service</option>
         </select>
 
-        <input type="text" id="link" placeholder="Enter Link">
+        <input
+            type="text"
+            id="link"
+            placeholder="Enter Link"
+        >
 
-        <input type="number" id="quantity" placeholder="Quantity">
+        <input
+            type="number"
+            id="quantity"
+            placeholder="Quantity"
+        >
 
-        <button id="orderBtn">Place Order</button>
+        <button id="orderBtn">
+            Place Order
+        </button>
     </div>
 
     <div class="card">
@@ -43,7 +63,9 @@
         <p>No orders yet.</p>
     </div>
 
-    <button id="logoutBtn">Logout</button>
+    <button id="logoutBtn">
+        Logout
+    </button>
 
 </div>
 
@@ -51,12 +73,3 @@
 
 </body>
 </html>
-<div class="card">
-    <h3>Add Funds</h3>
-
-    <p>UPI se payment karke balance add karein.</p>
-
-    <button onclick="window.location.href='add-funds.html'">
-        Add Funds
-    </button>
-</div>
