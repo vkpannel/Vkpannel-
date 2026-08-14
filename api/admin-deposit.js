@@ -94,17 +94,31 @@ export default async function handler(req, res) {
       });
     }
 
-    // Approval will use a database transaction in the next step.
-    return res.status(200).json({
-      success: false,
-      message: "Admin verified. Approval transaction will be enabled next."
-    });
-
-  } catch (error) {
-    console.error("Admin deposit error:", error);
-
-    return res.status(500).json({
-      error: "Server error"
-    });
+// Approve request using secure database function
+const response = await fetch(
+  `${process.env.SUPABASE_URL}/rest/v1/rpc/approve_deposit`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`
+    },
+    body: JSON.stringify({
+      p_request_id: requestId
+    })
   }
-    }
+);
+
+const data = await response.json();
+
+if (!response.ok) {
+  return res.status(response.status).json({
+    error: data?.message || data?.hint || "Failed to approve deposit"
+  });
+}
+
+return res.status(200).json({
+  success: true,
+  message: "Deposit approved"
+});
