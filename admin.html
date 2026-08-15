@@ -42,272 +42,215 @@
             background: #ef4444;
             color: white;
         }
-
-        #message {
-            margin-bottom: 15px;
-        }
     </style>
 </head>
 
 <body>
 
-    <h1>VKPannel Admin</h1>
+<h1>VKPannel Admin</h1>
 
-    <div id="message"></div>
+<div id="requests">
+    Checking admin access...
+</div>
 
-    <div id="requests">
-        Loading requests...
-    </div>
+<script type="module">
 
-    <script type="module">
+const SUPABASE_URL =
+    "https://condkcjbmvghrexgcinn.supabase.co";
 
-        const SUPABASE_URL =
-            "https://condkcjbmvghrexgcinn.supabase.co";
+const SUPABASE_KEY =
+    "sb_publishable_g0UPWbNisSLTMdSBR8-6iw_EDQsilZ-";
 
-        const SUPABASE_KEY =
-            "sb_publishable_g0UPWbNisSLTMdSBR8-6iw_EDQsilZ-";
+const ADMIN_USER_ID =
+    "bdc50e50-e981-459e-b3d5-2fc489801dd1";
 
-        const { createClient } =
-            await import(
-                "https://esm.sh/@supabase/supabase-js@2"
-            );
+const { createClient } =
+    await import(
+        "https://esm.sh/@supabase/supabase-js@2"
+    );
 
-        const supabase =
-            createClient(
-                SUPABASE_URL,
-                SUPABASE_KEY
-            );
+const supabase =
+    createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
-        // =========================
-        // LOAD PENDING REQUESTS
-        // =========================
+async function checkAdmin() {
 
-        async function loadRequests() {
+    const container =
+        document.getElementById("requests");
 
-            const container =
-                document.getElementById("requests");
+    const {
+        data: { user },
+        error
+    } = await supabase.auth.getUser();
 
-            container.innerHTML =
-                "Loading requests...";
+    if (error || !user) {
+        container.innerHTML =
+            "Please login first.";
+        return false;
+    }
 
-            try {
+    if (user.id !== ADMIN_USER_ID) {
+        container.innerHTML =
+            "Access denied. Admin only.";
+        return false;
+    }
 
-                const {
-                    data: { user }
-                } = await supabase.auth.getUser();
+    return true;
+}
 
-                if (!user) {
-                    container.innerHTML =
-                        "Please login first.";
-                    return;
-                }
 
-                const { data, error } =
-                    await supabase
-                        .from("deposit_requests")
-                        .select("*")
-                        .eq("status", "pending")
-                        .order("created_at", {
-                            ascending: false
-                        });
+async function loadRequests() {
 
-                if (error) {
+    const container =
+        document.getElementById("requests");
 
-                    console.error(error);
+    const isAdmin =
+        await checkAdmin();
 
-                    container.innerHTML =
-                        "Failed to load requests: " +
-                        error.message;
+    if (!isAdmin) {
+        return;
+    }
 
-                    return;
-                }
+    container.innerHTML =
+        "Loading requests...";
 
-                if (!data || data.length === 0) {
+    const { data, error } =
+        await supabase
+            .from("deposit_requests")
+            .select("*")
+            .eq("status", "pending")
+            .order("created_at", {
+                ascending: false
+            });
 
-                    container.innerHTML =
-                        "No pending deposit requests.";
+    if (error) {
 
-                    return;
-                }
+        console.error(error);
 
-                container.innerHTML = "";
+        container.innerHTML =
+            "Failed to load requests: " +
+            error.message;
 
-                data.forEach(request => {
+        return;
+    }
 
-                    const div =
-                        document.createElement("div");
+    if (!data || data.length === 0) {
 
-                    div.className = "request";
+        container.innerHTML =
+            "No pending deposit requests.";
 
-                    div.innerHTML = `
-                        <strong>Amount:</strong>
-                        ₹${Number(request.amount).toFixed(2)}
-                        <br>
+        return;
+    }
 
-                        <strong>UTR:</strong>
-                        ${request.utr}
-                        <br>
+    container.innerHTML = "";
 
-                        <strong>User ID:</strong>
-                        ${request.user_id}
-                        <br>
+    data.forEach(request => {
 
-                        <strong>Status:</strong>
-                        ${request.status}
-                        <br><br>
+        const div =
+            document.createElement("div");
 
-                        <button class="approve">
-                            Approve
-                        </button>
+        div.className = "request";
 
-                        <button class="reject">
-                            Reject
-                        </button>
-                    `;
+        div.innerHTML = `
+            <strong>Amount:</strong>
+            ₹${Number(request.amount).toFixed(2)}
+            <br>
 
-                    const approveBtn =
-                        div.querySelector(".approve");
+            <strong>UTR:</strong>
+            ${request.utr}
+            <br>
 
-                    const rejectBtn =
-                        div.querySelector(".reject");
+            <strong>User ID:</strong>
+            ${request.user_id}
+            <br>
 
-                    approveBtn.onclick =
-                        () => approveRequest(request.id);
+            <strong>Status:</strong>
+            ${request.status}
+            <br><br>
 
-                    rejectBtn.onclick =
-                        () => rejectRequest(request.id);
+            <button class="approve">
+                Approve
+            </button>
 
-                    container.appendChild(div);
-                });
+            <button class="reject">
+                Reject
+            </button>
+        `;
 
-            } catch (error) {
+        div.querySelector(".approve").onclick =
+            () => adminAction(request.id, "approve");
 
-                console.error(error);
+        div.querySelector(".reject").onclick =
+            () => adminAction(request.id, "reject");
 
-                container.innerHTML =
-                    "Failed to load requests: " +
-                    error.message;
-            }
-        }
+        container.appendChild(div);
+    });
+}
 
 
-        // =========================
-        // ADMIN ACTION
-        // =========================
+async function adminAction(id, action) {
 
-        async function adminAction(id, action) {
+    const {
+        data: { session }
+    } = await supabase.auth.getSession();
 
-            const {
-                data: { session }
-            } = await supabase.auth.getSession();
+    if (!session) {
+        alert("Please login first.");
+        return;
+    }
 
-            if (!session) {
-                alert("Please login first.");
-                return;
-            }
+    try {
 
-            try {
+        const response =
+            await fetch("/api/admin-deposit", {
+                method: "POST",
 
-                const response =
-                    await fetch("/api/admin-deposit", {
+                headers: {
+                    "Content-Type":
+                        "application/json",
 
-                        method: "POST",
+                    "Authorization":
+                        `Bearer ${session.access_token}`
+                },
 
-                        headers: {
-                            "Content-Type":
-                                "application/json",
+                body: JSON.stringify({
+                    requestId: id,
+                    action: action
+                })
+            });
 
-                            "Authorization":
-                                `Bearer ${session.access_token}`
-                        },
+        const result =
+            await response.json();
 
-                        body: JSON.stringify({
-                            requestId: id,
-                            action: action
-                        })
-                    });
-
-
-                const result =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        result.error ||
-                        "Request failed"
-                    );
-                }
-
-
-                alert(
-                    result.message ||
-                    "Done"
-                );
-
-
-                await loadRequests();
-
-
-            } catch (error) {
-
-                console.error(
-                    "Admin action error:",
-                    error
-                );
-
-                alert(error.message);
-            }
-        }
-
-
-        // =========================
-        // APPROVE
-        // =========================
-
-        async function approveRequest(id) {
-
-            if (!confirm(
-                "Is deposit ko approve karna hai?"
-            )) {
-                return;
-            }
-
-            await adminAction(
-                id,
-                "approve"
+        if (!response.ok) {
+            throw new Error(
+                result.error ||
+                "Request failed"
             );
         }
 
+        alert(
+            result.message ||
+            "Done"
+        );
 
-        // =========================
-        // REJECT
-        // =========================
+        await loadRequests();
 
-        async function rejectRequest(id) {
+    } catch (error) {
 
-            if (!confirm(
-                "Is deposit ko reject karna hai?"
-            )) {
-                return;
-            }
+        console.error(error);
 
-            await adminAction(
-                id,
-                "reject"
-            );
-        }
+        alert(error.message);
+    }
+}
 
 
-        // =========================
-        // START
-        // =========================
+loadRequests();
 
-        loadRequests();
-
-    </script>
+</script>
 
 </body>
 </html>
